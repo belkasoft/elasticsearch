@@ -86,9 +86,17 @@ public abstract class EnvironmentAwareCommand extends Command {
         execute(terminal, options, createEnv(terminal, settings));
     }
 
+    private static String getProperty(final String key) {
+        final String propertyValue = System.getenv(key);
+        if (propertyValue != null) {
+            return propertyValue;
+        }
+        return System.getProperty(key);
+    }
+
     /** Create an {@link Environment} for the command to use. Overrideable for tests. */
     protected Environment createEnv(final Terminal terminal, final Map<String, String> settings) throws UserException {
-        final String esPathConf = System.getProperty("es.path.conf");
+        final String esPathConf = getProperty("es.path.conf");
         if (esPathConf == null) {
             throw new UserException(ExitCodes.CONFIG, "the system property [es.path.conf] must be set");
         }
@@ -102,7 +110,7 @@ public abstract class EnvironmentAwareCommand extends Command {
 
     /** Ensure the given setting exists, reading it from system properties if not already set. */
     private static void putSystemPropertyIfSettingIsMissing(final Map<String, String> settings, final String setting, final String key) {
-        final String value = System.getProperty(key);
+        final String value = getProperty(key);
         if (value != null) {
             if (settings.containsKey(setting)) {
                 final String message =
